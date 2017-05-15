@@ -15,7 +15,7 @@ $ids=$_POST["accounts"];
 $ids=explode("\n",$ids);
 $ids=array_filter($ids,"trim");
 for($i=0; $i<$count;$i++){
-$random_user = call("http://api.randomuser.me/?nat=tr");
+$random_user = call("http://api.randomuser.me/?nat=tr"); #http://api.randomuser.me/?nat=tr change ?nat= for another countries
 $random_user = json_decode($random_user);
 $random_user_name = $random_user->results[0]->name->first;
 $random_user_surname = $random_user->results[0]->name->last;
@@ -35,7 +35,7 @@ if ($random_user_gender == "female"){
 $gender="f";
 $pictures = glob("botImages/f/*.{jpg}", GLOB_BRACE);
 }else{
-continue;
+// continue; #ENABLE HERE FOR ONLY FEMALE ACCOUNTS
 $pictures = glob("botImages/m/*.{jpg}", GLOB_BRACE);	
 $gender="m";
 }
