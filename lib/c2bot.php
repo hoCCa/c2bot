@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 error_reporting(E_ALL);
 set_time_limit(0);
 ob_start();
@@ -10,7 +10,7 @@ class c2bot {
 	public static $emailaddress = null; // Email address
 	
     # Mobile API için kullanacak URL
-    private $API_URL = 'http://api.connected2.me/b/';
+    private $API_URL = 'http://api.c2me.cc/b/';
 
     # Çerezlerin tutulacağı klasor ismi
     private $cFolder = "cookies/";
@@ -47,6 +47,9 @@ class c2bot {
 	# Telefon numarası
 	private $phone_number = '5355350000';
 
+    # İşlemlerde var olan SQL bağlantısı kullanılacak mı?
+    private $SQL = FALSE;
+
     # İşlem sonuç değişkeni 1
     private $success = NULL;
 
@@ -71,6 +74,7 @@ class c2bot {
         {
             if ( is_array($settings) )
             {
+                $this->SQL = ($settings['_sql'] == true) ? true : false;
                 if ($settings['_folder']) $this->cFolder = $settings['_folder'];
                 if ( stripos($settings['_extension'], '.') === FALSE )
                 {
@@ -116,15 +120,16 @@ class c2bot {
             $first_name = ($randomName) ? $randomName : $username;
             $email_username = str_replace([".", "_"], NULL, $username);
 			$email = $this->email;
+			$email .='@gmail.com';
 			$gender=$this->gender;
-            //$email = "{$email_username}@yandex.com";
-            $post_data = "email={$email}&password={$password}&username={$username}&birthday=1994-1-1&gender={$gender}";
+			//$email = "viay@binka.me";
+			//$username="viay";
+			//$password="serseri77";
+            $post_data = "email={$email}&password={$password}&username={$username}";
           $headers = [
                 'Accept: */*',
                 'Content-Length: '.strlen($post_data),
                 'Content-Type: application/x-www-form-urlencoded; charset=UTF-8',
-                'Origin: https://connected2.me',
-                'Referer: https://connected2.me/',
                 'User-Agent: ' . $user_agent,
                 'Connection: keep-alive',
                 'X_FORWARDED_FOR: ' . $fake_ip,
@@ -207,6 +212,32 @@ class c2bot {
             $data = $this->cURL($params);
 			if(preg_match('/{"status": "OK"}/i', $data))
             {
+				// Define the GuID
+$guid = $this->GenerateGuid();
+// Set the devide ID
+$device_id = "android-".$guid;
+				$parameters=[
+					'url' => $this->API_URL."mobile_info?device_id={$device_id}&nick={$username}&password={$password}",
+					'options' => [
+                CURLOPT_HEADER => FALSE
+            ]
+				];
+				$this->cURL($parameters);
+				$parameters=[
+					'url' => $this->API_URL."switch_status?nick={$username}&password={$password}",
+					'options' => [
+                CURLOPT_HEADER => FALSE
+            ]
+				];
+				$this->cURL($parameters);
+			
+            $params = [
+                'url' => $this->API_URL."set_birthday_and_gender?birthday=1993-06-18&gender={$gender}&nick={$username}&password={$password}",
+                'options' => [
+                CURLOPT_HEADER => FALSE
+            ]
+            ];
+			$this->cURL($params);
                 // Cookie File
                 $cookie_file = $this->cFolder . $username . $this->cExtension;
 
@@ -221,7 +252,7 @@ class c2bot {
                     "web"                   => true,
                     "status"                => "ok"
                 ], JSON_PRETTY_PRINT);
-                file_put_contents($cookie_file, $json);
+                //file_put_contents($cookie_file, $json);
 
 				// ŞİFRELERİ TUT 
 				
@@ -229,7 +260,7 @@ class c2bot {
 				$sifre_file = $this->cFolder . "sifre.txt";
 				file_put_contents($sifre_file, $sifre."\n",FILE_APPEND);
 
-				
+				/*
 				$stat=true;
 				while($stat){
 					$msg=$this->getmails($this->email);
@@ -244,9 +275,9 @@ class c2bot {
 				$verify_params = [
                 'url' => $verify[0][0]
 				];
-				$verify_now=$this->cURL($verify_params);
+				$verify_now=$this->cURL($verify_params);*/
 				$this->change_pp($username,$password);
-				$this->change_bio($username,$password);				
+				$this->change_bio($username,$password); 				
                 if (is_array($this->followList))
                 {
                     foreach ($this->followList as $follow_id)
@@ -271,6 +302,16 @@ class c2bot {
         ]);
     }
 	
+
+    /*
+     *  Açılan bot hesaplara takip ettirme fonksiyonu
+     *
+     *  @param $user_id
+     *  @param $count
+     *
+     *  @return json
+     */
+
 	 
 	public function change_pp($username,$password){
 		if (count($this->pictures) > 0)
@@ -314,6 +355,206 @@ class c2bot {
 		$follow=$this->cURL($follow_params);
 	}
 	
+    public function follow($user_id, $count, $accounts = NULL)
+    {
+        set_time_limit(0);
+        if (is_array($accounts))
+            $cookies = $accounts;
+        else
+            $cookies = $this->getCookies($count);
+
+        $key = 0;
+        foreach ($cookies as $cookie) {
+
+            // Cookie Data
+            $user = json_decode(file_get_contents($cookie));
+
+            if ($user->web) // Web Cookie
+            {
+                $fake_ip = ($user->fake_ip) ? $user->fake_ip : $this->randFakeIP();
+                $user_agent = ($user->user_agent) ? $user->user_agent : $this->randUserAgent();
+
+                $opts[$key] = [
+                    "url"         => "https://www.instagram.com/web/friendships/{$user_id}/follow/",
+                    "user_agent"  => $user_agent,
+                    "cookie"      => $user->cookie,
+                    "header"      => TRUE,
+                    "header_out"  => TRUE,
+                    "post"        => [],
+                    "http_header" => [
+                        'origin: https://www.instagram.com',
+                        'accept-encoding: gzip, deflate, br',
+                        'accept-language: tr-TR,tr;q=0.8,en-US;q=0.6,en;q=0.4',
+                        "User-Agent: {$user_agent}",
+                        'x-requested-with: XMLHttpRequest',
+                        'x-csrftoken: ' . $user->csrftoken,
+                        'x-instagram-ajax: 1',
+                        'content-type: application/x-www-form-urlencoded',
+                        'cookie:' . $user->cookie,
+                        'accept: */*',
+                        "referer: https://www.instagram.com/{$user->username}/",
+                        'authority: www.instagram.com',
+                        'content-length: 0',
+                        'X_FORWARDED_FOR: ' . $fake_ip,
+                        'REMOTE_ADDR: ' . $fake_ip
+                    ],
+                    "key" => $key
+                ];
+            }
+
+            $data[$key] = [
+                "username"  => $user->username,
+                "id"        => $user->id
+            ];
+
+            $key++;
+        }
+
+        //print_r($opts);
+
+        $this->success = 0;
+        $this->clean = 0;
+        $this->data = [];
+        multi_curl($opts, function ($que, $key) use (&$data) {
+            $_data = $data[$key];
+            if ($que->status == "ok" && $que->http_code == 200) {
+                if ($this->SQL)
+                    DB::query("UPDATE `accounts` SET `last_action_time` = NOW() WHERE `user_id` = '{$_data['id']}'");
+                $this->success++;
+            } elseif ($que->status == "fail" && $que->message == "login_required") {
+                if ($this->SQL)
+                    DB::query("DELETE FROM `accounts` WHERE `user_id` = '{$_data['id']}'");
+                @unlink($this->cFolder . $_data['username'] . ".json");
+                $this->clean++;
+            } elseif ($que->status == "fail" && $que->message == "checkpoint_required") {
+                if ($this->SQL)
+                    DB::query("DELETE FROM `accounts` WHERE `user_id` = '{$_data['id']}'");
+                @unlink($this->cFolder . $_data['username'] . ".json");
+                $this->clean++;
+            } elseif ($que->status == "fail" && $que->message == "unauthorized") {
+                if ($this->SQL)
+                    DB::query("DELETE FROM `accounts` WHERE `user_id` = '{$_data['id']}'");
+                @unlink($this->cFolder . $_data['username'] . ".json");
+                $this->clean++;
+            }
+            $this->data[] = [
+                'username' => $_data['username'],
+                'json' => $que->content
+            ];
+        }, 250);
+
+        return json_encode([
+            'success'    => $this->success,
+            'clean'      => $this->clean,
+            'response'   => $this->data
+        ]);
+    }
+
+    /*
+     *  Açılan bot hesaplara takip ettirme fonksiyonu
+     *
+     *  @param $user_id
+     *  @param $count
+     *
+     *  @return json
+     */
+
+    public function like($media_id, $count, $accounts = NULL)
+    {
+        set_time_limit(0);
+        if (is_array($accounts))
+            $cookies = $accounts;
+        else
+            $cookies = $this->getCookies($count);
+
+        $key = 0;
+        foreach ($cookies as $cookie) {
+
+            // Cookie Data
+            $user = json_decode(file_get_contents($cookie));
+
+            if ($user->web) // Web Cookie
+            {
+                $fake_ip = ($user->fake_ip) ? $user->fake_ip : $this->randFakeIP();
+                $user_agent = ($user->user_agent) ? $user->user_agent : $this->randUserAgent();
+
+                $opts[$key] = [
+                    "url"         => "https://www.instagram.com/web/likes/{$media_id}/like/",
+                    "user_agent"  => $user_agent,
+                    "cookie"      => $user->cookie,
+                    "header"      => TRUE,
+                    "header_out"  => TRUE,
+                    "post"        => [
+                        "media_id"  => $media_id
+                    ],
+                    "http_header" => [
+                        'origin: https://www.instagram.com',
+                        'accept-encoding: gzip, deflate, br',
+                        'accept-language: tr-TR,tr;q=0.8,en-US;q=0.6,en;q=0.4',
+                        "User-Agent: {$user_agent}",
+                        'x-requested-with: XMLHttpRequest',
+                        'x-csrftoken: ' . $user->csrftoken,
+                        'x-instagram-ajax: 1',
+                        'content-type: application/x-www-form-urlencoded',
+                        'cookie:' . $user->cookie,
+                        'accept: */*',
+                        "referer: https://www.instagram.com/{$user->username}/",
+                        'authority: www.instagram.com',
+                        'content-length: 0',
+                        'X_FORWARDED_FOR: ' . $fake_ip,
+                        'REMOTE_ADDR: ' . $fake_ip
+                    ],
+                    "key" => $key
+                ];
+            }
+
+            $data[$key] = [
+                "username"  => $user->username,
+                "id"        => $user->id
+            ];
+
+            $key++;
+        }
+
+        //print_r($opts);
+
+        $this->success = 0;
+        $this->clean = 0;
+        $this->data = [];
+        multi_curl($opts, function ($que, $key) use (&$data) {
+            $_data = $data[$key];
+            if ($que->status == "ok" && $que->http_code == 200) {
+                if ($this->SQL)
+                    DB::query("UPDATE `accounts` SET `last_action_time` = NOW() WHERE `user_id` = '{$_data['id']}'");
+                $this->success++;
+            } elseif ($que->status == "fail" && $que->message == "login_required") {
+                if ($this->SQL)
+                    DB::query("DELETE FROM `accounts` WHERE `user_id` = '{$_data['id']}'");
+                @unlink($this->cFolder . $_data['username'] . ".json");
+                $this->clean++;
+            } elseif ($que->status == "fail" && $que->message == "checkpoint_required") {
+                if ($this->SQL)
+                    DB::query("DELETE FROM `accounts` WHERE `user_id` = '{$_data['id']}'");
+                @unlink($this->cFolder . $_data['username'] . ".json");
+                $this->clean++;
+            } elseif ($que->status == "fail" && $que->message == "unauthorized") {
+                if ($this->SQL)
+                    DB::query("DELETE FROM `accounts` WHERE `user_id` = '{$_data['id']}'");
+                @unlink($this->cFolder . $_data['username'] . ".json");
+                $this->clean++;
+            }
+            $this->data[] = [
+                'username' => $_data['username'],
+                'json' => $que->content
+            ];
+        }, 250);
+
+        return json_encode([
+            'success'    => $this->success,
+            'clean'      => $this->clean,
+            //'response'   => $this->data
+        ]);
+    }
 
     /*
      *  Açılan bot hesapların resim güncelleme fonksiyonu
@@ -359,6 +600,244 @@ class c2bot {
     }
 
 	
+	
+	/*
+	** ChangeBio
+	*/
+	    public function changeBio($username,$email,$phone_number,$gender,$bio)
+    {
+
+        $cookie = $this->cFolder . $username . $this->cExtension;
+        $user_data = json_decode(file_get_contents($cookie));
+
+        $csrf_token = $user_data->csrftoken;
+        $userAgent = ($user_data->user_agent) ? $user_data->user_agent : $this->randUserAgent();
+
+        $params = [
+            'url' => 'https://www.instagram.com/accounts/edit/',
+            'options' => [
+                CURLOPT_POST => TRUE,
+				CURLOPT_VERBOSE => FALSE,
+                CURLOPT_POSTFIELDS => [
+					'email' => $email,
+                    'biography' => $bio
+                ],
+                CURLOPT_ENCODING => "gzip,deflate",
+                CURLOPT_HTTPHEADER => [
+                    'Accept: */*',
+                    'Accept-Language: tr-TR,tr;q=0.8,en-US;q=0.5,en;q=0.3',
+                    'Accept-Encoding: gzip, deflate',
+                    'Referer: https://www.instagram.com/',
+                    'DNT: 1',
+                    'Content-Type: multipart/form-data',
+                    'Origin: https://www.instagram.com/',
+                    'X-CSRFToken: ' . trim($csrf_token),
+                    'X-Requested-With: XMLHttpRequest',
+                    'User-Agent: ' . $userAgent,
+                    'X-Instagram-AJAX: 1',
+                    'Connection: keep-alive',
+                    'Pragma: no-cache',
+                    'Cache-Control: no-cache'
+                ],
+                CURLOPT_COOKIE => $user_data->cookie
+            ]
+        ];
+
+        $que = json_decode($this->cURL($params));
+        if ($que->status == "ok") {
+
+            if ($this->SQL)
+                DB::query("UPDATE `accounts` SET `picture` = '{$que->profile_pic_url}', `changed_profile` = '1' WHERE `user_id` = '{$user_data->id}'");
+
+            $_data['user_array']['changed_profile'] = true;
+            file_put_contents($this->cFolder . $_data['username'] . $this->cExtension, json_encode($_data['user_array'], JSON_PRETTY_PRINT));
+
+            $this->success++;
+        } elseif ($que->status == "fail" && $que->message == "login_required") {
+            if ($this->SQL)
+                DB::query("DELETE FROM `accounts` WHERE `user_id` = '{$user_data->id}'");
+            @unlink($this->cFolder . $user_data->username . ".json");
+            $this->clean++;
+        } elseif ($que->status == "fail" && $que->message == "checkpoint_required") {
+            if ($this->SQL)
+                DB::query("DELETE FROM `accounts` WHERE `user_id` = '{$user_data->id}'");
+            @unlink($this->cFolder . $user_data->username . ".json");
+            $this->clean++;
+        } elseif ($que->status == "fail" && $que->message == "unauthorized") {
+            if ($this->SQL)
+                DB::query("DELETE FROM `accounts` WHERE `user_id` = '{$user_data->id}'");
+            @unlink($this->cFolder . $user_data->username . ".json");
+            $this->clean++;
+        }
+    }
+    /*
+     *  Açılan bot hesapların toplu resim güncelleme fonksiyonu
+     *
+     *  @param $username
+     *  @param $photo
+     *
+     *  @return json
+     */
+    public function multipleChangeProfile($count, $pictures)
+    {
+        $cookies = $this->getCookies($count);
+
+        $key = 0;
+        foreach ($cookies as $cookie)
+        {
+            $user = json_decode(file_get_contents($cookie));
+            $user_array = json_decode(file_get_contents($cookie), true);
+
+            shuffle($pictures);
+            shuffle($pictures);
+            $photo = ( count($pictures) > 0 ) ? $pictures[rand(0, (count($pictures) - 1))] : NULL;
+
+            if ($user->changed_profile == false) // Web Cookie
+            {
+                $userAgent = ($user->user_agent) ? $user->user_agent : $this->randUserAgent();
+
+                $opts[$key] = [
+                    "url"         => "https://www.instagram.com/accounts/web_change_profile_picture/",
+                    "user_agent"  => $userAgent,
+                    "cookie"      => $user->cookie,
+                    "encoding"    => "gzip,deflate",
+                    "header"      => TRUE,
+                    "header_out"  => TRUE,
+					"verbose"	  => FALSE,
+                    "_post"        => [
+                        'profile_pic' => $this->cURLValue($photo)
+                    ],
+                    "http_header" => [
+                        'Accept: */*',
+                        'Accept-Language: tr-TR,tr;q=0.8,en-US;q=0.5,en;q=0.3',
+                        'Accept-Encoding: gzip, deflate',
+                        'Referer: https://www.instagram.com/',
+                        'DNT: 1',
+                        'Content-Type: multipart/form-data',
+                        'Origin: https://www.instagram.com/',
+                        'X-CSRFToken: ' . trim($user->csrftoken),
+                        'X-Requested-With: XMLHttpRequest',
+                        'User-Agent: ' . $userAgent,
+                        'X-Instagram-AJAX: 1',
+                        'Connection: keep-alive',
+                        'Pragma: no-cache',
+                        'Cache-Control: no-cache'
+                    ],
+                    "key" => $key
+                ];
+            }
+
+            $data[$key] = [
+                "username"      => $user->username,
+                "id"            => $user->id,
+                "user_array"    => $user_array
+            ];
+
+            $key++;
+        }
+
+        $this->success = 0;
+        $this->clean = 0;
+        $this->data = [];
+        multi_curl($opts, function ($que, $key) use (&$data) {
+            $_data = $data[$key];
+            if ($que->status == "ok" && $que->http_code == 200) {
+
+                if ($this->SQL)
+                    DB::query("UPDATE `accounts` SET `picture` = '{$que->profile_pic_url}', `changed_profile` = '1' WHERE `user_id` = '{$_data['id']}'");
+
+                $_data['user_array']['changed_profile'] = true;
+                file_put_contents($this->cFolder . $_data['username'] . $this->cExtension, json_encode($_data['user_array'], JSON_PRETTY_PRINT));
+
+                $this->success++;
+            } elseif ($que->status == "fail" && $que->message == "login_required") {
+                if ($this->SQL)
+                    DB::query("DELETE FROM `accounts` WHERE `user_id` = '{$_data['id']}'");
+                @unlink($this->cFolder . $_data['username'] . ".json");
+                $this->clean++;
+            } elseif ($que->status == "fail" && $que->message == "checkpoint_required") {
+                if ($this->SQL)
+                    DB::query("DELETE FROM `accounts` WHERE `user_id` = '{$_data['id']}'");
+                @unlink($this->cFolder . $_data['username'] . ".json");
+                $this->clean++;
+            } elseif ($que->status == "fail" && $que->message == "unauthorized") {
+                if ($this->SQL)
+                    DB::query("DELETE FROM `accounts` WHERE `user_id` = '{$_data['id']}'");
+                @unlink($this->cFolder . $_data['username'] . ".json");
+                $this->clean++;
+            }
+            $this->data[] = [
+                'username' => $_data['username'],
+                'json' => $que->content
+            ];
+        }, 250);
+
+        return json_encode([
+            'success'    => $this->success,
+            'clean'      => $this->clean,
+            'response'   => $this->data
+        ]);
+    }
+
+	 /*
+     *  Açılan hesaba fotoğraflar yükler
+     *
+     *  @param $username
+     *  @param $photo
+     *
+     *  @return json
+     */
+    public function addPhotos($username, $count, $pictures)
+    {
+        $cookie = $this->cFolder . $username . $this->cExtension;
+        $user_data = json_decode(file_get_contents($cookie));
+        $csrf_token = $user_data->csrftoken;
+        $userAgent = ($user_data->user_agent) ? $user_data->user_agent : $this->randUserAgent();
+		$userAgent = 'Instagram 6.21.2 Android (19/4.4.2; 480dpi; 1152x1920; Meizu; MX4; mx4; mt6595; en_US)';
+	
+// Define the GuID
+$guid = $this->GenerateGuid();
+// Set the devide ID
+$device_id = "android-".$guid;
+/* LOG IN */
+// You must be logged in to the account that you wish to post a photo too
+// Set all of the parameters in the string, and then sign it with their API key using SHA-256
+$data = '{"device_id":"'.$device_id.'","guid":"'.$guid.'","username":"'.$user_data->username.'","password":"'.$user_data->password.'","Content-Type":"application/x-www-form-urlencoded; charset=UTF-8"}';
+$sig = $this->GenerateSignature($data);
+$data = 'signed_body='.$sig.'.'.urlencode($data).'&ig_sig_key_version=6';
+$login = $this->SendRequest('accounts/login/', true, $data, $userAgent, $user_data->cookie);
+for($i=0;$i<$count;$i++){
+		shuffle($pictures);
+        shuffle($pictures);
+        $photo = ( count($pictures) > 0 ) ? $pictures[rand(0, (count($pictures) - 1))] : NULL;
+		$data = $this->GetPostData($photo);
+		$post = $this->SendRequest('media/upload/', true, $data, $userAgent, $user_data->cookie);  
+	}
+	return TRUE;
+}
+
+    /*
+     *  Açılan bot hesapların çağırma fonksiyonu
+     *
+     *  @param $count
+     *  @param $extension
+     *
+     *  @return array
+     */
+    protected function getCookies($count, $extension = "json")
+    {
+        $data_dir = glob($this->cFolder . "*." . $extension);
+        shuffle($data_dir);
+        shuffle($data_dir);
+        shuffle($data_dir);
+        $data_dir = array_slice($data_dir, 0, $count);
+        $data = [];
+        foreach ($data_dir as $file) {
+            $data[] = $file;
+        }
+        return $data;
+    }
+
     /*
      *  İşlemler için kullanılacak fake ip
      *
@@ -621,7 +1100,26 @@ class c2bot {
     return $response;
     }
 	
-
+	public function SendRequest($url, $post, $post_data, $user_agent, $cookies) {
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, 'https://www.instagram.com/api/v1/'.$url);
+    curl_setopt($ch, CURLOPT_USERAGENT, $user_agent);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+    if($post) {
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $post_data);
+    }
+    curl_setopt($ch, CURLOPT_COOKIE, $cookies);
+    $response = curl_exec($ch);
+    $http = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    
+    curl_close($ch);
+    
+    return array($http, $response);
+}
 
     /*
      *  Fotoğraf işlemlerinde kullanılan cURLFILE fonksiyonu
@@ -777,13 +1275,12 @@ class c2bot {
 				$target = 'http://api.temp-mail.ru/request/' . $request . '/id/' . $addressid . '/format/json';
 				break;
 		}
-		
 		$handle = curl_init ( $target );
 		curl_setopt ( $handle, CURLOPT_HEADER, false );
 		curl_setopt ( $handle, CURLOPT_RETURNTRANSFER, true );
+		$httpCode = curl_getinfo($handle , CURLINFO_HTTP_CODE); // this results 0 every time
 		$result = curl_exec ( $handle );
 		curl_close ( $handle );
-		
 		return json_decode ( $result, true );
 	}
 	
