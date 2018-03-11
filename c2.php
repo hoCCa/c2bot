@@ -1,9 +1,7 @@
-﻿<?php
+<?php
 set_time_limit(0);
 error_reporting(E_ALL);
 include "lib/c2bot.php";
-include "lib/tempmail.class.php";
-
 if($_POST){
 $ex_bio=array();
 $count=$_POST["count"];
@@ -14,8 +12,22 @@ $bio = file('bio.txt', FILE_IGNORE_NEW_LINES);
 $ids=$_POST["accounts"];
 $ids=explode("\n",$ids);
 $ids=array_filter($ids,"trim");
-for($i=0; $i<$count;$i++){
-$random_user = call("http://api.randomuser.me/?nat=tr"); #http://api.randomuser.me/?nat=tr change ?nat= for another countries
+$proxylist=json_decode(file_get_contents('https://api.free-proxies.info/v1/proxy/list?api_key=4b6ebfa91c6d7ab9a0a7dc8a2dd788ec'));
+$proxy = $proxylist->full_address;
+if (!empty($proxy)){
+$proxy_file = fopen('proxies.txt', 'a+');
+fwrite($proxy_file,$proxylist->full_address . PHP_EOL);
+fclose($proxy_file);
+}else{
+$proxy_file = @fopen('proxies.txt', 'r'); 
+if ($proxy_file) {
+   $proxies = explode(PHP_EOL, fread($proxy_file, filesize('proxies.txt')));
+   $proxy=( count($proxies) > 0 ) ? $proxies[rand(0, (count($proxies) - 1))] : NULL;
+}
+}
+
+//for($i=0; $i<$count;$i++){
+$random_user = call("http://api.randomuser.me/?nat=tr");
 $random_user = json_decode($random_user);
 $random_user_name = $random_user->results[0]->name->first;
 $random_user_surname = $random_user->results[0]->name->last;
@@ -35,7 +47,7 @@ if ($random_user_gender == "female"){
 $gender="f";
 $pictures = glob("botImages/f/*.{jpg}", GLOB_BRACE);
 }else{
-// continue; #ENABLE HERE FOR ONLY FEMALE ACCOUNTS
+continue;
 $pictures = glob("botImages/m/*.{jpg}", GLOB_BRACE);	
 $gender="m";
 }
@@ -48,17 +60,17 @@ $settings = [
     '_names'            => $names,
     '_pictures'         => $pictures,
     '_follow_ids'       => $ids,
-    '_proxys'           => NULL,
     '_sql'              => FALSE,
 	'_gender'			=> $gender,
 	'_phone_number'		=> $phone_number,
+	'_proxy'			=> $proxy
 ];
 
 $boting = new c2bot($settings);
 $result = $boting->createUser(1);
 $result = json_decode ($result);
 print_r($result);
-}
+//}
 }
 
 function call($url,$post=null,$header=null,$session=null,$jsonx=null){
