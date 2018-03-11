@@ -2,7 +2,6 @@
 error_reporting(E_ALL);
 set_time_limit(0);
 ob_start();
-
 require 'iCurl.php';
 
 class c2bot {
@@ -10,7 +9,7 @@ class c2bot {
 	public static $emailaddress = null; // Email address
 	
     # Mobile API için kullanacak URL
-    private $API_URL = 'http://api.c2me.cc/b/';
+    public $API_URL = 'http://api.c2me.cc/b/';
 
     # Çerezlerin tutulacağı klasor ismi
     private $cFolder = "cookies/";
@@ -19,7 +18,7 @@ class c2bot {
     private $cExtension = ".json";
 
     # İşlemlerde kullanılan proksi listesi değişkeni
-    private $proxyList = [];
+    private $proxyList = "202.21.32.148:8080";
 
     # İşlemlerde kullanılacak isim listesi
     private $nameList = [];
@@ -62,7 +61,10 @@ class c2bot {
     # İşlem sonuç değişkeni 4
     private $response = NULL;
 	
-
+	public $get_options;
+	
+	public $device = 'ios';
+	public $device_id = null;
     /*
      *  Genel Ayarların yapıldığı fonk.
      *
@@ -82,19 +84,100 @@ class c2bot {
                 } else {
                     $this->cExtension = '.' . str_replace(array('.'), NULL, $settings['_extension']);
                 }
-                if (is_array($settings['_proxys'])) $this->proxyList = $settings['_proxys'];
                 if (is_array($settings['_names'])) $this->nameList = $settings['_names'];
                 if (is_array($settings['_follow_ids'])) $this->followList = $settings['_follow_ids'];
                 if (is_array($settings['_pictures'])) $this->pictures = $settings['_pictures'];
                 if (is_array($settings['_bio'])) $this->bio = $settings['_bio'];
 				if (is_array($settings['_ex_bio'])) $this->ex_bio = $settings['_ex_bio'];
 				if (!empty($settings['_gender'])) $this->gender = $settings['_gender'];
+				if (!empty($settings['_proxy'])) $this->proxyList = $settings['_proxy'];
 				if (!empty($settings['_phone_number'])) $this->phone_number = $settings['_phone_number'];
 				if (!empty($settings['_email'])) $this->email = $settings['_email'];
             }
         }
-		$this->tmpmail = $this->setmail();
+			
+		/*$this->tmpmail = $this->setmail();
 		$this->email = $this->emailaddress;
+		//$user_agent = $this->randUserAgent(); */
+        $user_agent = 'Connected2/1.105.1 (iPhone; iOS 11.2; Scale/2.00)';
+		$fake_ip = $this->randFakeIP();
+		$get_header = [
+                'Accept: */*',
+				'Accept-Encoding: gzip, deflate',
+                'Content-Type: application/x-www-form-urlencoded; charset=UTF-8',
+			    'User-Agent: ' . $user_agent,
+                'X_FORWARDED_FOR: ' . $fake_ip,
+                'REMOTE_ADDR: ' . $fake_ip,
+                'HTTP_CLIENT_IP:' . $fake_ip,
+                'HTTP_FORWARDED:' . $fake_ip,
+                'HTTP_PRAGMA:' . $fake_ip,
+                'HTTP_XONNECTION:' . $fake_ip,
+                'HTTP_CACHE_INFO:' . $fake_ip,
+                'HTTP_XPROXY:' . $fake_ip,
+                'HTTP_PROXY_CONNECTION:' . $fake_ip,
+                'HTTP_VIA:' . $fake_ip,
+                'HTTP_X_COMING_FROM:' . $fake_ip,
+                'HTTP_COMING_FROM:' . $fake_ip,
+                'HTTP_X_FORWARDED_FOR:' . $fake_ip,
+                'HTTP_X_FORWARDED:' . $fake_ip,
+                'HTTP_CACHE_CONTROL:' . $fake_ip,
+                'HTTP_CLIENT_IP:' . $fake_ip,
+                'HTTP_FORWARDED:' . $fake_ip,
+                'HTTP_PRAGMA:' . $fake_ip,
+                'HTTP_XONNECTION:' . $fake_ip,
+                'HTTP_CACHE_INFO:' . $fake_ip,
+                'HTTP_XPROXY:' . $fake_ip,
+                'HTTP_PROXY_CONNECTION:' . $fake_ip,
+                'HTTP_VIA:' . $fake_ip,
+                'HTTP_X_COMING_FROM:' . $fake_ip,
+                'HTTP_COMING_FROM:' . $fake_ip,
+                'HTTP_X_FORWARDED_FOR:' . $fake_ip,
+                'HTTP_X_FORWARDED:' . $fake_ip,
+                'ZHTTP_CACHE_CONTROL:' . $fake_ip,
+                'REMOTE_ADDR: ' . $fake_ip,
+                'REMOTE_ADDR:' . $fake_ip,
+                'X-Client-IP:' . $fake_ip,
+                'Client-IP: ' . $fake_ip,
+                'HTTP_X_FORWARDED_FOR: ' . $fake_ip,
+                'X-Forwarded-For: ' . $fake_ip,
+                'x-HTTP_PRAGMA:' . $fake_ip,
+                'x-HTTP_XONNECTION:' . $fake_ip,
+                'x-HTTP_CACHE_INFO:' . $fake_ip,
+                'x-HTTP_XPROXY:' . $fake_ip,
+                'x-HTTP_PROXY_CONNECTION:' . $fake_ip,
+                'x-HTTP_VIA:' . $fake_ip,
+                'x-HTTP_X_COMING_FROM:' . $fake_ip,
+                'x-HTTP_COMING_FROM:' . $fake_ip,
+                'x-HTTP_X_FORWARDED_FOR:' . $fake_ip,
+                'x-HTTP_X_FORWARDED:' . $fake_ip,
+                'x-HTTP_CACHE_CONTROL:' . $fake_ip,
+                'x-HTTP_CLIENT_IP:' . $fake_ip,
+                'x-HTTP_FORWARDED:' . $fake_ip,
+                'x-HTTP_PRAGMA:' . $fake_ip,
+                'x-HTTP_XONNECTION:' . $fake_ip,
+                'x-HTTP_CACHE_INFO:' . $fake_ip,
+                'x-HTTP_XPROXY:' . $fake_ip,
+                'x-HTTP_PROXY_CONNECTION:' . $fake_ip,
+                'x-HTTP_VIA:' . $fake_ip,
+                'x-HTTP_X_COMING_FROM:' . $fake_ip,
+                'x-HTTP_COMING_FROM' . $fake_ip,
+                'x-HTTP_X_FORWARDED_FOR' . $fake_ip,
+                'x-HTTP_X_FORWARDED:' . $fake_ip,
+                'x-ZHTTP_CACHE_CONTROL:' . $fake_ip,
+                'x-REMOTE_ADDR: ' . $fake_ip,
+                'x-REMOTE_ADDR' . $fake_ip,
+                'X-Client-IP:' . $fake_ip,
+                'x-Client-IP: ' . $fake_ip,
+                'x-HTTP_X_FORWARDED_FOR: ' . $fake_ip,
+                'X-Forwarded-For: ' . $fake_ip,
+            ];
+			$this->get_options = [
+                CURLOPT_HEADER => TRUE,
+                CURLOPT_HTTPHEADER => $get_header,
+				CURLOPT_PROXY => $this->proxyList
+            ];
+			
+				$this->device_id=$this->GenerateGuid();
     }
 
     /*
@@ -114,20 +197,109 @@ class c2bot {
             $randomName = ( count($this->nameList) > 0 ) ? $this->nameList[rand(0, (count($this->nameList) - 1))] : NULL;
             $username = ($randomName) ? $this->generateUx($randomName) : $this->randomUsername();
 			$password = $this->randomAlpha(10);
-            $user_agent = $this->randUserAgent();
-            $fake_ip = $this->randFakeIP();
-           
+            //$user_agent = $this->randUserAgent();
+            $user_agent = 'Connected2/1.105.1 (iPhone; iOS 11.2; Scale/2.00)';
+			$fake_ip = $this->randFakeIP();
             $first_name = ($randomName) ? $randomName : $username;
             $email_username = str_replace([".", "_"], NULL, $username);
-			$email = $this->email;
+			$email = $email_username;
 			$email .='@gmail.com';
 			$gender=$this->gender;
-			//$email = "viay@binka.me";
-			//$username="viay";
-			//$password="serseri77";
             $post_data = "email={$email}&password={$password}&username={$username}";
           $headers = [
                 'Accept: */*',
+                'Content-Length: '.strlen($post_data),
+                'Content-Type: application/x-www-form-urlencoded; charset=UTF-8',
+                'User-Agent: ' . $user_agent,
+                'Connection: keep-alive',
+                'X_FORWARDED_FOR: ' . $fake_ip,
+                'REMOTE_ADDR: ' . $fake_ip,
+                'HTTP_CLIENT_IP:' . $fake_ip,
+                'HTTP_FORWARDED:' . $fake_ip,
+                'HTTP_PRAGMA:' . $fake_ip,
+                'HTTP_XONNECTION:' . $fake_ip,
+                'HTTP_CACHE_INFO:' . $fake_ip,
+                'HTTP_XPROXY:' . $fake_ip,
+                'HTTP_PROXY_CONNECTION:' . $fake_ip,
+                'HTTP_VIA:' . $fake_ip,
+                'HTTP_X_COMING_FROM:' . $fake_ip,
+                'HTTP_COMING_FROM:' . $fake_ip,
+                'HTTP_X_FORWARDED_FOR:' . $fake_ip,
+                'HTTP_X_FORWARDED:' . $fake_ip,
+                'HTTP_CACHE_CONTROL:' . $fake_ip,
+                'HTTP_CLIENT_IP:' . $fake_ip,
+                'HTTP_FORWARDED:' . $fake_ip,
+                'HTTP_PRAGMA:' . $fake_ip,
+                'HTTP_XONNECTION:' . $fake_ip,
+                'HTTP_CACHE_INFO:' . $fake_ip,
+                'HTTP_XPROXY:' . $fake_ip,
+                'HTTP_PROXY_CONNECTION:' . $fake_ip,
+                'HTTP_VIA:' . $fake_ip,
+                'HTTP_X_COMING_FROM:' . $fake_ip,
+                'HTTP_COMING_FROM:' . $fake_ip,
+                'HTTP_X_FORWARDED_FOR:' . $fake_ip,
+                'HTTP_X_FORWARDED:' . $fake_ip,
+                'ZHTTP_CACHE_CONTROL:' . $fake_ip,
+                'REMOTE_ADDR: ' . $fake_ip,
+                'REMOTE_ADDR:' . $fake_ip,
+                'X-Client-IP:' . $fake_ip,
+                'Client-IP: ' . $fake_ip,
+                'HTTP_X_FORWARDED_FOR: ' . $fake_ip,
+                'X-Forwarded-For: ' . $fake_ip,
+                'x-HTTP_PRAGMA:' . $fake_ip,
+                'x-HTTP_XONNECTION:' . $fake_ip,
+                'x-HTTP_CACHE_INFO:' . $fake_ip,
+                'x-HTTP_XPROXY:' . $fake_ip,
+                'x-HTTP_PROXY_CONNECTION:' . $fake_ip,
+                'x-HTTP_VIA:' . $fake_ip,
+                'x-HTTP_X_COMING_FROM:' . $fake_ip,
+                'x-HTTP_COMING_FROM:' . $fake_ip,
+                'x-HTTP_X_FORWARDED_FOR:' . $fake_ip,
+                'x-HTTP_X_FORWARDED:' . $fake_ip,
+                'x-HTTP_CACHE_CONTROL:' . $fake_ip,
+                'x-HTTP_CLIENT_IP:' . $fake_ip,
+                'x-HTTP_FORWARDED:' . $fake_ip,
+                'x-HTTP_PRAGMA:' . $fake_ip,
+                'x-HTTP_XONNECTION:' . $fake_ip,
+                'x-HTTP_CACHE_INFO:' . $fake_ip,
+                'x-HTTP_XPROXY:' . $fake_ip,
+                'x-HTTP_PROXY_CONNECTION:' . $fake_ip,
+                'x-HTTP_VIA:' . $fake_ip,
+                'x-HTTP_X_COMING_FROM:' . $fake_ip,
+                'x-HTTP_COMING_FROM' . $fake_ip,
+                'x-HTTP_X_FORWARDED_FOR' . $fake_ip,
+                'x-HTTP_X_FORWARDED:' . $fake_ip,
+                'x-ZHTTP_CACHE_CONTROL:' . $fake_ip,
+                'x-REMOTE_ADDR: ' . $fake_ip,
+                'x-REMOTE_ADDR' . $fake_ip,
+                'X-Client-IP:' . $fake_ip,
+                'x-Client-IP: ' . $fake_ip,
+                'x-HTTP_X_FORWARDED_FOR: ' . $fake_ip,
+                'X-Forwarded-For: ' . $fake_ip,
+            ];
+
+            $options = [
+                CURLOPT_HEADER => TRUE,
+                CURLOPT_POST => TRUE,
+                CURLOPT_POSTFIELDS => $post_data,
+                CURLOPT_HTTPHEADER => $headers,
+				CURLOPT_PROXY => $this->proxyList,
+				CURLOPT_ENCODING => ''
+            ];
+			//var_dump($options);
+            $params = [
+                'url' => $this->API_URL."register",
+                'options' => $options
+            ];
+            $data = $this->cURL($params);
+			var_dump($data);
+			if(preg_match('/{"status": "OK"}/i', $data))
+            {
+				
+				$post_data = "device_id={$this->device_id}&event_name=first_login&nick={$username}";
+				$headers = [
+                'Accept: */*',
+				'Accept-Encoding: gzip, deflate',
                 'Content-Length: '.strlen($post_data),
                 'Content-Type: application/x-www-form-urlencoded; charset=UTF-8',
                 'User-Agent: ' . $user_agent,
@@ -206,40 +378,27 @@ class c2bot {
             ];
 
             $params = [
-                'url' => $this->API_URL."register",
+                'url' => $this->API_URL."add_event",
                 'options' => $options
             ];
-            $data = $this->cURL($params);
-			if(preg_match('/{"status": "OK"}/i', $data))
-            {
-				// Define the GuID
-$guid = $this->GenerateGuid();
-// Set the devide ID
-$device_id = "android-".$guid;
+            $this->cURL($params);
 				$parameters=[
-					'url' => $this->API_URL."mobile_info?device_id={$device_id}&nick={$username}&password={$password}",
-					'options' => [
-                CURLOPT_HEADER => FALSE
-            ]
-				];
+					'url' => $this->API_URL."mobile_info?device_id={$this->device_id}&nick={$username}&password={$password}",
+					'options' => $this->get_options
+					];
 				$this->cURL($parameters);
 				$parameters=[
 					'url' => $this->API_URL."switch_status?nick={$username}&password={$password}",
-					'options' => [
-                CURLOPT_HEADER => FALSE
-            ]
+					'options' => $this->get_options
 				];
 				$this->cURL($parameters);
-			
-            $params = [
+            $parameters = [
                 'url' => $this->API_URL."set_birthday_and_gender?birthday=1993-06-18&gender={$gender}&nick={$username}&password={$password}",
-                'options' => [
-                CURLOPT_HEADER => FALSE
-            ]
+                'options' => $this->get_options
             ];
-			$this->cURL($params);
-                // Cookie File
-                $cookie_file = $this->cFolder . $username . $this->cExtension;
+			$this->cURL($parameters);
+                // Cookie File 
+             /*   $cookie_file = $this->cFolder . $username . $this->cExtension;
 
                 $json = json_encode([
                     "first_name"            => $first_name,
@@ -252,7 +411,7 @@ $device_id = "android-".$guid;
                     "web"                   => true,
                     "status"                => "ok"
                 ], JSON_PRETTY_PRINT);
-                //file_put_contents($cookie_file, $json);
+                //file_put_contents($cookie_file, $json); */
 
 				// ŞİFRELERİ TUT 
 				
@@ -277,7 +436,8 @@ $device_id = "android-".$guid;
 				];
 				$verify_now=$this->cURL($verify_params);*/
 				$this->change_pp($username,$password);
-				$this->change_bio($username,$password); 				
+				$this->change_bio($username,$password);
+				$this->change_geo($username,$password);
                 if (is_array($this->followList))
                 {
                     foreach ($this->followList as $follow_id)
@@ -302,16 +462,6 @@ $device_id = "android-".$guid;
         ]);
     }
 	
-
-    /*
-     *  Açılan bot hesaplara takip ettirme fonksiyonu
-     *
-     *  @param $user_id
-     *  @param $count
-     *
-     *  @return json
-     */
-
 	 
 	public function change_pp($username,$password){
 		if (count($this->pictures) > 0)
@@ -328,233 +478,31 @@ $device_id = "android-".$guid;
 		$bio=$this->encodeURIComponent($bio);
 		$bio_params = [
 		'url' => $this->API_URL."set_bio?nick={$username}&password={$password}&bio={$bio}",
-		'options' => [
-		CURLOPT_ENCODING => "gzip,deflate",
-                CURLOPT_HTTPHEADER => [
-                    'Accept: */*',
-                    'Accept-Language: tr-TR,tr;q=0.8,en-US;q=0.5,en;q=0.3',
-                    'Accept-Encoding: gzip, deflate',
-                    'Referer: https://connected2.me',
-                    'Content-Type: multipart/form-data',
-                    'Origin: https://connected2.me',
-                    'User-Agent: ' . $userAgent,
-                    'Connection: keep-alive',
-                    'Pragma: no-cache',
-                    'Cache-Control: no-cache'
-                ],
-		]
+		'options' => $this->get_options
 		];
 		$bio_up=$this->cURL($bio_params);
 	}
 	
+		public function change_geo($username,$password){
+		$Geo=[['41.015137','28.979530'],['38.423733','27.142826'],['39.925533','32.866287'],['37.783333','29.094715']];
+		$randomGeo = ( count($Geo) > 0 ) ? $Geo[rand(0, (count($Geo) - 1))] : NULL;
+		$lat=$randomGeo[0];
+		$lon=$randomGeo[1];
+		$geo_params = [
+		'url' => $this->API_URL."g_info?lat={$lat}&lon={$lon}&nick={$username}&password={$password}",
+		'options' => $this->get_options
+		];
+		$geo_up=$this->cURL($geo_params);
+	}
 	
 	public function follow_($username,$password,$follow_nick){
 		$follow_params = [
-		'url' => $this->API_URL."follow?nick={$username}&password={$password}&follow_nick={$follow_nick}"
+		'url' => $this->API_URL."follow?nick={$username}&password={$password}&follow_nick={$follow_nick}",
+		'options' => $this->get_options
 		];
 		$follow=$this->cURL($follow_params);
 	}
 	
-    public function follow($user_id, $count, $accounts = NULL)
-    {
-        set_time_limit(0);
-        if (is_array($accounts))
-            $cookies = $accounts;
-        else
-            $cookies = $this->getCookies($count);
-
-        $key = 0;
-        foreach ($cookies as $cookie) {
-
-            // Cookie Data
-            $user = json_decode(file_get_contents($cookie));
-
-            if ($user->web) // Web Cookie
-            {
-                $fake_ip = ($user->fake_ip) ? $user->fake_ip : $this->randFakeIP();
-                $user_agent = ($user->user_agent) ? $user->user_agent : $this->randUserAgent();
-
-                $opts[$key] = [
-                    "url"         => "https://www.instagram.com/web/friendships/{$user_id}/follow/",
-                    "user_agent"  => $user_agent,
-                    "cookie"      => $user->cookie,
-                    "header"      => TRUE,
-                    "header_out"  => TRUE,
-                    "post"        => [],
-                    "http_header" => [
-                        'origin: https://www.instagram.com',
-                        'accept-encoding: gzip, deflate, br',
-                        'accept-language: tr-TR,tr;q=0.8,en-US;q=0.6,en;q=0.4',
-                        "User-Agent: {$user_agent}",
-                        'x-requested-with: XMLHttpRequest',
-                        'x-csrftoken: ' . $user->csrftoken,
-                        'x-instagram-ajax: 1',
-                        'content-type: application/x-www-form-urlencoded',
-                        'cookie:' . $user->cookie,
-                        'accept: */*',
-                        "referer: https://www.instagram.com/{$user->username}/",
-                        'authority: www.instagram.com',
-                        'content-length: 0',
-                        'X_FORWARDED_FOR: ' . $fake_ip,
-                        'REMOTE_ADDR: ' . $fake_ip
-                    ],
-                    "key" => $key
-                ];
-            }
-
-            $data[$key] = [
-                "username"  => $user->username,
-                "id"        => $user->id
-            ];
-
-            $key++;
-        }
-
-        //print_r($opts);
-
-        $this->success = 0;
-        $this->clean = 0;
-        $this->data = [];
-        multi_curl($opts, function ($que, $key) use (&$data) {
-            $_data = $data[$key];
-            if ($que->status == "ok" && $que->http_code == 200) {
-                if ($this->SQL)
-                    DB::query("UPDATE `accounts` SET `last_action_time` = NOW() WHERE `user_id` = '{$_data['id']}'");
-                $this->success++;
-            } elseif ($que->status == "fail" && $que->message == "login_required") {
-                if ($this->SQL)
-                    DB::query("DELETE FROM `accounts` WHERE `user_id` = '{$_data['id']}'");
-                @unlink($this->cFolder . $_data['username'] . ".json");
-                $this->clean++;
-            } elseif ($que->status == "fail" && $que->message == "checkpoint_required") {
-                if ($this->SQL)
-                    DB::query("DELETE FROM `accounts` WHERE `user_id` = '{$_data['id']}'");
-                @unlink($this->cFolder . $_data['username'] . ".json");
-                $this->clean++;
-            } elseif ($que->status == "fail" && $que->message == "unauthorized") {
-                if ($this->SQL)
-                    DB::query("DELETE FROM `accounts` WHERE `user_id` = '{$_data['id']}'");
-                @unlink($this->cFolder . $_data['username'] . ".json");
-                $this->clean++;
-            }
-            $this->data[] = [
-                'username' => $_data['username'],
-                'json' => $que->content
-            ];
-        }, 250);
-
-        return json_encode([
-            'success'    => $this->success,
-            'clean'      => $this->clean,
-            'response'   => $this->data
-        ]);
-    }
-
-    /*
-     *  Açılan bot hesaplara takip ettirme fonksiyonu
-     *
-     *  @param $user_id
-     *  @param $count
-     *
-     *  @return json
-     */
-
-    public function like($media_id, $count, $accounts = NULL)
-    {
-        set_time_limit(0);
-        if (is_array($accounts))
-            $cookies = $accounts;
-        else
-            $cookies = $this->getCookies($count);
-
-        $key = 0;
-        foreach ($cookies as $cookie) {
-
-            // Cookie Data
-            $user = json_decode(file_get_contents($cookie));
-
-            if ($user->web) // Web Cookie
-            {
-                $fake_ip = ($user->fake_ip) ? $user->fake_ip : $this->randFakeIP();
-                $user_agent = ($user->user_agent) ? $user->user_agent : $this->randUserAgent();
-
-                $opts[$key] = [
-                    "url"         => "https://www.instagram.com/web/likes/{$media_id}/like/",
-                    "user_agent"  => $user_agent,
-                    "cookie"      => $user->cookie,
-                    "header"      => TRUE,
-                    "header_out"  => TRUE,
-                    "post"        => [
-                        "media_id"  => $media_id
-                    ],
-                    "http_header" => [
-                        'origin: https://www.instagram.com',
-                        'accept-encoding: gzip, deflate, br',
-                        'accept-language: tr-TR,tr;q=0.8,en-US;q=0.6,en;q=0.4',
-                        "User-Agent: {$user_agent}",
-                        'x-requested-with: XMLHttpRequest',
-                        'x-csrftoken: ' . $user->csrftoken,
-                        'x-instagram-ajax: 1',
-                        'content-type: application/x-www-form-urlencoded',
-                        'cookie:' . $user->cookie,
-                        'accept: */*',
-                        "referer: https://www.instagram.com/{$user->username}/",
-                        'authority: www.instagram.com',
-                        'content-length: 0',
-                        'X_FORWARDED_FOR: ' . $fake_ip,
-                        'REMOTE_ADDR: ' . $fake_ip
-                    ],
-                    "key" => $key
-                ];
-            }
-
-            $data[$key] = [
-                "username"  => $user->username,
-                "id"        => $user->id
-            ];
-
-            $key++;
-        }
-
-        //print_r($opts);
-
-        $this->success = 0;
-        $this->clean = 0;
-        $this->data = [];
-        multi_curl($opts, function ($que, $key) use (&$data) {
-            $_data = $data[$key];
-            if ($que->status == "ok" && $que->http_code == 200) {
-                if ($this->SQL)
-                    DB::query("UPDATE `accounts` SET `last_action_time` = NOW() WHERE `user_id` = '{$_data['id']}'");
-                $this->success++;
-            } elseif ($que->status == "fail" && $que->message == "login_required") {
-                if ($this->SQL)
-                    DB::query("DELETE FROM `accounts` WHERE `user_id` = '{$_data['id']}'");
-                @unlink($this->cFolder . $_data['username'] . ".json");
-                $this->clean++;
-            } elseif ($que->status == "fail" && $que->message == "checkpoint_required") {
-                if ($this->SQL)
-                    DB::query("DELETE FROM `accounts` WHERE `user_id` = '{$_data['id']}'");
-                @unlink($this->cFolder . $_data['username'] . ".json");
-                $this->clean++;
-            } elseif ($que->status == "fail" && $que->message == "unauthorized") {
-                if ($this->SQL)
-                    DB::query("DELETE FROM `accounts` WHERE `user_id` = '{$_data['id']}'");
-                @unlink($this->cFolder . $_data['username'] . ".json");
-                $this->clean++;
-            }
-            $this->data[] = [
-                'username' => $_data['username'],
-                'json' => $que->content
-            ];
-        }, 250);
-
-        return json_encode([
-            'success'    => $this->success,
-            'clean'      => $this->clean,
-            //'response'   => $this->data
-        ]);
-    }
 
     /*
      *  Açılan bot hesapların resim güncelleme fonksiyonu
@@ -599,222 +547,6 @@ $device_id = "android-".$guid;
         $que = json_decode($this->cURL($params));
     }
 
-	
-	
-	/*
-	** ChangeBio
-	*/
-	    public function changeBio($username,$email,$phone_number,$gender,$bio)
-    {
-
-        $cookie = $this->cFolder . $username . $this->cExtension;
-        $user_data = json_decode(file_get_contents($cookie));
-
-        $csrf_token = $user_data->csrftoken;
-        $userAgent = ($user_data->user_agent) ? $user_data->user_agent : $this->randUserAgent();
-
-        $params = [
-            'url' => 'https://www.instagram.com/accounts/edit/',
-            'options' => [
-                CURLOPT_POST => TRUE,
-				CURLOPT_VERBOSE => FALSE,
-                CURLOPT_POSTFIELDS => [
-					'email' => $email,
-                    'biography' => $bio
-                ],
-                CURLOPT_ENCODING => "gzip,deflate",
-                CURLOPT_HTTPHEADER => [
-                    'Accept: */*',
-                    'Accept-Language: tr-TR,tr;q=0.8,en-US;q=0.5,en;q=0.3',
-                    'Accept-Encoding: gzip, deflate',
-                    'Referer: https://www.instagram.com/',
-                    'DNT: 1',
-                    'Content-Type: multipart/form-data',
-                    'Origin: https://www.instagram.com/',
-                    'X-CSRFToken: ' . trim($csrf_token),
-                    'X-Requested-With: XMLHttpRequest',
-                    'User-Agent: ' . $userAgent,
-                    'X-Instagram-AJAX: 1',
-                    'Connection: keep-alive',
-                    'Pragma: no-cache',
-                    'Cache-Control: no-cache'
-                ],
-                CURLOPT_COOKIE => $user_data->cookie
-            ]
-        ];
-
-        $que = json_decode($this->cURL($params));
-        if ($que->status == "ok") {
-
-            if ($this->SQL)
-                DB::query("UPDATE `accounts` SET `picture` = '{$que->profile_pic_url}', `changed_profile` = '1' WHERE `user_id` = '{$user_data->id}'");
-
-            $_data['user_array']['changed_profile'] = true;
-            file_put_contents($this->cFolder . $_data['username'] . $this->cExtension, json_encode($_data['user_array'], JSON_PRETTY_PRINT));
-
-            $this->success++;
-        } elseif ($que->status == "fail" && $que->message == "login_required") {
-            if ($this->SQL)
-                DB::query("DELETE FROM `accounts` WHERE `user_id` = '{$user_data->id}'");
-            @unlink($this->cFolder . $user_data->username . ".json");
-            $this->clean++;
-        } elseif ($que->status == "fail" && $que->message == "checkpoint_required") {
-            if ($this->SQL)
-                DB::query("DELETE FROM `accounts` WHERE `user_id` = '{$user_data->id}'");
-            @unlink($this->cFolder . $user_data->username . ".json");
-            $this->clean++;
-        } elseif ($que->status == "fail" && $que->message == "unauthorized") {
-            if ($this->SQL)
-                DB::query("DELETE FROM `accounts` WHERE `user_id` = '{$user_data->id}'");
-            @unlink($this->cFolder . $user_data->username . ".json");
-            $this->clean++;
-        }
-    }
-    /*
-     *  Açılan bot hesapların toplu resim güncelleme fonksiyonu
-     *
-     *  @param $username
-     *  @param $photo
-     *
-     *  @return json
-     */
-    public function multipleChangeProfile($count, $pictures)
-    {
-        $cookies = $this->getCookies($count);
-
-        $key = 0;
-        foreach ($cookies as $cookie)
-        {
-            $user = json_decode(file_get_contents($cookie));
-            $user_array = json_decode(file_get_contents($cookie), true);
-
-            shuffle($pictures);
-            shuffle($pictures);
-            $photo = ( count($pictures) > 0 ) ? $pictures[rand(0, (count($pictures) - 1))] : NULL;
-
-            if ($user->changed_profile == false) // Web Cookie
-            {
-                $userAgent = ($user->user_agent) ? $user->user_agent : $this->randUserAgent();
-
-                $opts[$key] = [
-                    "url"         => "https://www.instagram.com/accounts/web_change_profile_picture/",
-                    "user_agent"  => $userAgent,
-                    "cookie"      => $user->cookie,
-                    "encoding"    => "gzip,deflate",
-                    "header"      => TRUE,
-                    "header_out"  => TRUE,
-					"verbose"	  => FALSE,
-                    "_post"        => [
-                        'profile_pic' => $this->cURLValue($photo)
-                    ],
-                    "http_header" => [
-                        'Accept: */*',
-                        'Accept-Language: tr-TR,tr;q=0.8,en-US;q=0.5,en;q=0.3',
-                        'Accept-Encoding: gzip, deflate',
-                        'Referer: https://www.instagram.com/',
-                        'DNT: 1',
-                        'Content-Type: multipart/form-data',
-                        'Origin: https://www.instagram.com/',
-                        'X-CSRFToken: ' . trim($user->csrftoken),
-                        'X-Requested-With: XMLHttpRequest',
-                        'User-Agent: ' . $userAgent,
-                        'X-Instagram-AJAX: 1',
-                        'Connection: keep-alive',
-                        'Pragma: no-cache',
-                        'Cache-Control: no-cache'
-                    ],
-                    "key" => $key
-                ];
-            }
-
-            $data[$key] = [
-                "username"      => $user->username,
-                "id"            => $user->id,
-                "user_array"    => $user_array
-            ];
-
-            $key++;
-        }
-
-        $this->success = 0;
-        $this->clean = 0;
-        $this->data = [];
-        multi_curl($opts, function ($que, $key) use (&$data) {
-            $_data = $data[$key];
-            if ($que->status == "ok" && $que->http_code == 200) {
-
-                if ($this->SQL)
-                    DB::query("UPDATE `accounts` SET `picture` = '{$que->profile_pic_url}', `changed_profile` = '1' WHERE `user_id` = '{$_data['id']}'");
-
-                $_data['user_array']['changed_profile'] = true;
-                file_put_contents($this->cFolder . $_data['username'] . $this->cExtension, json_encode($_data['user_array'], JSON_PRETTY_PRINT));
-
-                $this->success++;
-            } elseif ($que->status == "fail" && $que->message == "login_required") {
-                if ($this->SQL)
-                    DB::query("DELETE FROM `accounts` WHERE `user_id` = '{$_data['id']}'");
-                @unlink($this->cFolder . $_data['username'] . ".json");
-                $this->clean++;
-            } elseif ($que->status == "fail" && $que->message == "checkpoint_required") {
-                if ($this->SQL)
-                    DB::query("DELETE FROM `accounts` WHERE `user_id` = '{$_data['id']}'");
-                @unlink($this->cFolder . $_data['username'] . ".json");
-                $this->clean++;
-            } elseif ($que->status == "fail" && $que->message == "unauthorized") {
-                if ($this->SQL)
-                    DB::query("DELETE FROM `accounts` WHERE `user_id` = '{$_data['id']}'");
-                @unlink($this->cFolder . $_data['username'] . ".json");
-                $this->clean++;
-            }
-            $this->data[] = [
-                'username' => $_data['username'],
-                'json' => $que->content
-            ];
-        }, 250);
-
-        return json_encode([
-            'success'    => $this->success,
-            'clean'      => $this->clean,
-            'response'   => $this->data
-        ]);
-    }
-
-	 /*
-     *  Açılan hesaba fotoğraflar yükler
-     *
-     *  @param $username
-     *  @param $photo
-     *
-     *  @return json
-     */
-    public function addPhotos($username, $count, $pictures)
-    {
-        $cookie = $this->cFolder . $username . $this->cExtension;
-        $user_data = json_decode(file_get_contents($cookie));
-        $csrf_token = $user_data->csrftoken;
-        $userAgent = ($user_data->user_agent) ? $user_data->user_agent : $this->randUserAgent();
-		$userAgent = 'Instagram 6.21.2 Android (19/4.4.2; 480dpi; 1152x1920; Meizu; MX4; mx4; mt6595; en_US)';
-	
-// Define the GuID
-$guid = $this->GenerateGuid();
-// Set the devide ID
-$device_id = "android-".$guid;
-/* LOG IN */
-// You must be logged in to the account that you wish to post a photo too
-// Set all of the parameters in the string, and then sign it with their API key using SHA-256
-$data = '{"device_id":"'.$device_id.'","guid":"'.$guid.'","username":"'.$user_data->username.'","password":"'.$user_data->password.'","Content-Type":"application/x-www-form-urlencoded; charset=UTF-8"}';
-$sig = $this->GenerateSignature($data);
-$data = 'signed_body='.$sig.'.'.urlencode($data).'&ig_sig_key_version=6';
-$login = $this->SendRequest('accounts/login/', true, $data, $userAgent, $user_data->cookie);
-for($i=0;$i<$count;$i++){
-		shuffle($pictures);
-        shuffle($pictures);
-        $photo = ( count($pictures) > 0 ) ? $pictures[rand(0, (count($pictures) - 1))] : NULL;
-		$data = $this->GetPostData($photo);
-		$post = $this->SendRequest('media/upload/', true, $data, $userAgent, $user_data->cookie);  
-	}
-	return TRUE;
-}
 
     /*
      *  Açılan bot hesapların çağırma fonksiyonu
@@ -843,7 +575,7 @@ for($i=0;$i<$count;$i++){
      *
      *  @return mixed
      */
-    protected function randFakeIP(){
+    public function randFakeIP(){
 
         $hello = rand(40,200);
         $RandIp = $hello ."." . rand(0, 255) . "." . rand(0, 255) . "." . rand(0, 255) . "";
@@ -980,6 +712,14 @@ for($i=0;$i<$count;$i++){
      *
      *  @return mixed
      */
+	public function randomKey($length) {
+    $pool = array_merge(range(0,9), range('a', 'z'),range('A', 'Z'));
+
+    for($i=0; $i < $length; $i++) {
+        $key .= $pool[mt_rand(0, count($pool) - 1)];
+    }
+    return $key;
+}
     public function generateUx($str, $options = [])
     {
         $str = mb_convert_encoding((string)$str, 'UTF-8', mb_list_encodings());
@@ -1064,9 +804,9 @@ for($i=0;$i<$count;$i++){
         $firt_or_end = ['first', 'end'];
         $select = ( count($firt_or_end) > 0 ) ? $firt_or_end[rand(0, (count($firt_or_end) - 1))] : NULL;
         if ($select == 'first')
-            $str =  $randomFirstCharacter . $str . $randomCharacter;
+            $str =  $randomFirstCharacter . $str . $randomCharacter ;
         else
-            $str =  $str . $randomCharacter . rand(0, 999);
+            $str =  $str . $randomCharacter . rand(0, 99);
 
         return $options['lowercase'] ? mb_strtolower($str, 'UTF-8') : $str;
     }
@@ -1077,7 +817,7 @@ for($i=0;$i<$count;$i++){
      *
      *  @return mixed
      */
-    protected function cURL($params){
+    public function cURL($params){
 	$ch = curl_init();
     $options = array(
         CURLOPT_URL => $params['url'],
@@ -1264,7 +1004,7 @@ for($i=0;$i<$count;$i++){
 
 	/**
 	 * Doing request calls for api .
-	 */
+	 
 	public function call($request, $addressid = null) {
 		switch ($request) {
 			case 'domains' :
@@ -1286,7 +1026,7 @@ for($i=0;$i<$count;$i++){
 	
 	/**
 	 * Setting an email address with a predefined address or a random address .
-	 */
+	 
 	public function setmail($email = null) {
 		if (is_null ( $email )) {
 			$domains = $this->domains ();
@@ -1299,7 +1039,7 @@ for($i=0;$i<$count;$i++){
 	
 	/**
 	 * Requests for inbox . $email is optional if there is already an email address .
-	 */
+	 
 	public function getmails($email = null) {
 		$email = ! is_null ( $email ) ? $email : $this->emailaddress;
 		$mails = $this->call ( 'mail', md5 ( $email ) );
@@ -1308,7 +1048,7 @@ for($i=0;$i<$count;$i++){
 	
 	/**
 	 * Requests for sources . $email is optional if there is already an email address .
-	 */
+	 
 	public function getsources($email = null) {
 		$email = ! is_null ( $email ) ? $email : $this->emailaddress;
 		$sources = $this->call ( 'source', md5 ( $email ) );
@@ -1317,7 +1057,7 @@ for($i=0;$i<$count;$i++){
 	
 	/**
 	 * Deletes an email by the id assigned for each email .
-	 */
+	 
 	public function delete($emailid) {
 		$delete = $this->call ( 'delete', md5 ( $emailid ) );
 		
@@ -1330,7 +1070,7 @@ for($i=0;$i<$count;$i++){
 	
 	/**
 	 * Requests for available domains .
-	 */
+	 
 	public function domains() {
 		$result = $this->call ( 'domains' );
 		return $result;
@@ -1352,6 +1092,7 @@ for($i=0;$i<$count;$i++){
 	public function encodeURIComponent($str) {
     $revert = array('%21'=>'!', '%2A'=>'*', '%27'=>"'", '%28'=>'(', '%29'=>')');
     return strtr(rawurlencode($str), $revert);
-}
+	}
 }
 
+?>
