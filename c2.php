@@ -12,7 +12,7 @@ $bio = file('bio.txt', FILE_IGNORE_NEW_LINES);
 $ids=$_POST["accounts"];
 $ids=explode("\n",$ids);
 $ids=array_filter($ids,"trim");
-$proxylist=json_decode(file_get_contents('https://api.free-proxies.info/v1/proxy/list?api_key=4b6ebfa91c6d7ab9a0a7dc8a2dd788ec'));
+$proxylist=json_decode(file_get_contents('https://api.free-proxies.info/v1/proxy/list?api_key=API_KEY_FOR_PROXY'));
 $proxy = $proxylist->full_address;
 if (!empty($proxy)){
 $proxy_file = fopen('proxies.txt', 'a+');
