@@ -38,10 +38,10 @@ Only those who want to see it....
 <title>c2Bot</title>
 
     <!-- Bootstrap core CSS -->
-    <link href="../assets/css/bootstrap.min.css" rel="stylesheet">
+    <link href="./css/bootstrap.min.css" rel="stylesheet">
 
     <!-- Font awesome -->
-    <link href="../assets/css/font-awesome.min.css" rel="stylesheet">
+    <link href="./css/font-awesome.min.css" rel="stylesheet">
 
     <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
     <!--[if lt IE 9]>
