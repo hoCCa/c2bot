@@ -1,5 +1,8 @@
-﻿<?php
+<?php
+error_reporting(E_ALL);
 session_start();
+
+/* ENABLE FOR LOGIN 
 if($_SESSION['login']!=md5('xianthi')){
 if($_POST){
 $pass=$_POST["pass"];
@@ -24,7 +27,7 @@ Only those who want to see it....
     </form></pre>
 ";
 	exit;
-}
+}*/
 ?>
 <html>
 <head>
@@ -35,10 +38,10 @@ Only those who want to see it....
 <title>c2Bot</title>
 
     <!-- Bootstrap core CSS -->
-    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link href="../assets/css/bootstrap.min.css" rel="stylesheet">
 
     <!-- Font awesome -->
-    <link href="css/font-awesome.min.css" rel="stylesheet">
+    <link href="../assets/css/font-awesome.min.css" rel="stylesheet">
 
     <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
     <!--[if lt IE 9]>
@@ -58,16 +61,17 @@ $('#bot').on('submit', function(event) {
 	accs = $form.find("textarea[name='accounts']").val(),
 	bio = $form.find("textarea[name='ex_bio']").val(),
     url = "c2.php";
- 
+  for (i = 0; i < parseInt(cnt); i++) { 
   // Send the data using post
   var posting = $.post( url, { count: cnt,accounts:accs,ex_bio:bio } );
- 
+   }
   // Put the results in a div
   posting.done(function( data ) {
 	  console.log(data);
     $( "#result" ).empty().append( "request success." );
 	$("html, body").animate({ scrollTop: 0 }, "slow");
   });
+
 });
 
 
@@ -101,6 +105,17 @@ $( "#login_bots" ).click(function() {
  $("html, body").animate({ scrollTop: 0 }, "slow");
  });
 });
+
+$( "#send_story" ).click(function() {
+ var url = "sendstory.php";
+ var getting = $.get(url);
+ getting.done(function(data){
+	 console.log(data);
+ $( "#result" ).empty().append( "request success." );
+ $("html, body").animate({ scrollTop: 0 }, "slow");
+ });
+});
+
 
 });
 </script>
@@ -137,6 +152,14 @@ $( "#login_bots" ).click(function() {
 </div>
 <input id="login_bots" name="login_bots" type="button" value="Do it!" />
 </div>
+
+<div class="row">
+<div class="page-header">
+<h1>Send Story</h1>
+</div>
+<input id="send_story" name="send_story" type="button" value="Send!" />
+</div>
+
 
 <div class="row">
 <div class="page-header">
